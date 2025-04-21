@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="rentcar.db" readonly="0" foreign_keys="0" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1897"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="sqlite_sequence" custom_title="0" dock_id="1" table="4,15:mainsqlite_sequence"/><dock_state state="000000ff00000000fd0000000100000002000005460000037ffc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000005460000010a00ffffff000002850000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">CREATE table user(
+id_user INTEGER primary key AUTOINCREMENT, 
+name VARCHAR (55) not null,
+lastname varchar(155) not null, 
+wallet decimal(15,2) not null
+);
+
+SELECT * from user;
+
+CREATE TABLE vehicles(
+id_vehicle INTEGER PRIMARY KEY AUTOINCREMENT, 
+name varchar(55) not null,
+model varchar(55) not null,
+year date not null,
+rent_price decimal(7, 2) not null
+);
+
+CREATE TABLE car_rent(
+id_crnt INTEGER PRIMARY KEY AUTOINCREMENT, 
+id_user INTEGER not null,
+id_vehicle INTEGER not null, 
+start_date date not null, 
+end_date date not null,
+FOREIGN KEY (id_user) REFERENCES user(id_user),
+FOREIGN KEY (id_vehicle) REFERENCES vechicle(id_vehicle)
+);
+
+CREATE TABLE credentials(
+id_cre INTEGER PRIMARY KEY AUTOINCREMENT, 
+id_user INTEGER not null, 
+email varchar(65) not null, 
+user_password varchar(25) not NULL,
+FOREIGN KEY (id_user) REFERENCES user(id_user)
+);
+
+
+SELECT * from credentials;
+
+INSERT INTO user (name, lastname, wallet) VALUES('Michael' , 'Pacheco', 15436.45); 
+
+
+</sql><current_tab id="0"/></tab_sql></sqlb_project>
