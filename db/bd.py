@@ -1,4 +1,5 @@
 import sqlite3
+from abc import ABC, abstractmethod
 
 
 # here wer gonna call the first class related to the database management
@@ -35,13 +36,15 @@ class DATABASE:
                     name = input("Your name ->")
                     lastname = input ('your lastname ->')
                     wallet = input("yout wallet amount ->")
+                    email = input ('email ->')
+                    user_password = input("Password ->")
 
                     with sqlite3.connect(self.path) as db: 
                         cursor = db.cursor()
                         cursor.execute(
 
-                            f"insert into {table} values (?,?,?,?)",
-                            (id_user, name, lastname, wallet),
+                            f"insert into {table} values (?,?,?,?,?,?)",
+                            (id_user, name, lastname, wallet, email, user_password),
                         )
 
                 case 'vehicles': 
@@ -60,21 +63,6 @@ class DATABASE:
                             (id_vechicle, name, model,year, rent_price),
                         )
 
-                case 'credentials':
-
-                    id_credentials = input('Credentials id ->') 
-                    user_id = input("user id ->")
-                    email = input ('email ->')
-                    user_password = input("Password ->")
-
-                    with sqlite3.connect(self.path) as db: 
-                        cursor = db.cursor()
-                        cursor.execute(
-
-                                f"insert into {table} values (?,?,?,?)",
-                            (id_credentials, user_id, email,user_password),
-                        )
-                    
                 case 'car_rent': 
                     
                     id_carrent = input('Credentials id ->') 
@@ -106,7 +94,7 @@ class DATABASE:
                     cursor = db.cursor()
                     cursor.executemany(
 
-                        f"insert into {table} values (?,?,?,?)",
+                        f"insert into {table} values (?,?,?,?,?,?)",
                         lista,
                     )
 
@@ -118,17 +106,6 @@ class DATABASE:
                     cursor.executemany(
 
                         f"insert into {table} values (?,?,?,?,?)",
-                        lista,
-                    )
-
-            case 'credentials':
-
-
-                with sqlite3.connect(self.path) as db: 
-                    cursor = db.cursor()
-                    cursor.executemany(
-
-                            f"insert into {table} values (?,?,?,?)",
                         lista,
                     )
                 
@@ -147,47 +124,80 @@ class DATABASE:
                 raise sqlite3.OperationalError("Table does not exists!!")
 
 
-class menu: 
+class MENU(ABC): 
     """This module contains the methods for the user, cars and all menus related
     """
     def __init__(self, path: str):
         self.path = path
 
-
-    def user_menu(self, user_email, user_password): 
-        
-        with sqlite3.connect(self.path) as db: 
-            cursor = db.cursor()
-            
-            cursor.execute(
-                "Select * from credentials"
-            )
-            data = cursor.fetchall()
-        
-        for i in data: 
-            #Here we gonna add the user information
-            if user_email in i[2] and user_password in i[3]: 
-                pass
-
-            else:
-                print("Not in database")
-        
-
-
-        def my_cart(): 
-            pass
-
+    
+    @abstractmethod
     def cars_menu(self):
         pass
     
+    #make changes in wallet of user table
+    @abstractmethod
     def make_payment(self): 
         pass
+
+    def user_menu(self):
+        pass
+
+
+class USER(MENU): 
+
+    
+
+    def __init__(self, path):
+        super().__init__(path)
+        
+
+    def cars_menu(self):
+        pass
+
+    def make_payment(self):
+        pass
+
+    def user_menu(self):
+       pass
+    
+
+    def autentification(self): 
+        autentificator = False
+
+        with sqlite3.connect(self.path) as db:
+            cursor = db.cursor()
+            cursor.execute(
+                """
+                select * from user
+                """
+            )
+            users_data = cursor.fetchall()
+        
+        user_name = input('Loggin here -->')
+        password = input('User_Password -->')
+
+        for i in users_data: 
+            
+            if i[4] == user_name and i[5] == password: 
+                autentificator = True
+            
+            
+        
+        if autentificator == True: 
+            print('user loggin!!')
+            
+
+        else: 
+                raise sqlite3.OperationalError("User Not Valid :(")
+
+
 
 
 #Test
 if __name__ == '__main__': 
     str_path = 'db/rentcar.db'
-    # database = DATABASE(str_path)
+    database = DATABASE(str_path)
     # # lista = (
     # #     (3, "marlon", 'capardi', 16322.73),
     # #     (4, "Jairo", 'Seption', 16672.43),
@@ -197,10 +207,17 @@ if __name__ == '__main__':
     # table = input("Which table to read ->")
     # data = database.read(table)
     # print(data)
+    user1 = USER(str_path)
+    try:
+        user1.autentification()
 
-    menu1 = menu(str_path)
-    email = input('email ->')
-    password = input('password ->')
-    menu1.user_menu(email, password)
+    except sqlite3.OperationalError as e:
+        print(e)
+
+
+    
+
+
+
     
     

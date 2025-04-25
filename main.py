@@ -1,5 +1,5 @@
 import sqlite3
-from db.bd import DATABASE, menu
+from db.bd import DATABASE
 
 
 classe1 = DATABASE('db/rentcar.db')
@@ -8,5 +8,4 @@ datos = classe1.read(table)
 
 for i in datos: 
     print(f'Nombre {i[1]}{i[2]} Wallet {i[3]}')
-
 

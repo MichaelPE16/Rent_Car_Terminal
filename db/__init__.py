@@ -1,3 +1,3 @@
 """
-Aqui hablaremos de este proyecto
+Here we have the database conditions
 """
