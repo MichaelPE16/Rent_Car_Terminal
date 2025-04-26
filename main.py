@@ -1,5 +1,5 @@
 import sqlite3
-from db.bd import DATABASE
+from db.bd import DATABASE, USER
 
 
 classe1 = DATABASE('db/rentcar.db')
