@@ -143,17 +143,14 @@ class MENU(ABC):
     def user_menu(self):
         pass
 
-
 class USER(MENU): 
-
-    
 
     def __init__(self, path):
         super().__init__(path)
         self.autentificator = False
         
-
-    def cars_menu(self):
+    
+    def cars_menu(self, user_name:str):
         """Here the user can get access to the Vehicles Data"""
         if self.autentificator == True: 
             with sqlite3.connect(self.path) as db: 
@@ -169,7 +166,8 @@ class USER(MENU):
                 'OPTIONS-->\n',
                 '1-SHOW ALL VEHICLES\n',
                 '2-SHOW AVAILABLE VEHICLES\n',
-                '3-SHOW UNAVAILABLE VEHICLES\n'
+                '3-SHOW UNAVAILABLE VEHICLES\n', 
+                '4-SHOW USER RENT VEHICLES\n'
             )
             option = input("CHOOSE YOUR OPTION-->")
             match int(option): 
@@ -192,15 +190,69 @@ class USER(MENU):
                         if i[5] == False:
                             print(f' Vehicle ==> {i[1]} Model ==> {i[2]} Year ==> {i[3]} Price_rent ==> {i[4]} availability ==> {i[5]}\n')
                     print('-----------------------------------------------------------------------------------------------------')
-
+                
+                case 4: 
+                        with sqlite3.connect(self.path) as db: 
+                            cursor = db.cursor()
+                            cursor.execute(
+                                f" SELECT * from User_Rent WHERE user_name = '{user_name.strip()}' "
+                            )
+                            rentdata = cursor.fetchall()
+                            print('\n ------------------------------ Vehicles Menu ----------------------------------------------------\n')
+                            for i in rentdata:
+                                print(f'Vehicle ==> {i[0]} Model ==> {i[1]}')
+                            print('-----------------------------------------------------------------------------------------------------')
+                
                 case _: 
                     raise sqlite3.OperationalError('OPTION NOT AVAILABLE!!')
         else: 
             raise sqlite3.OperationalError("User not logged in")
 
 
-    def make_payment(self):
-        pass
+    def make_payment(self, user_name:str):
+        
+        if self.autentificator == True: 
+            with sqlite3.connect(self.path) as db:
+                cursor = db.cursor()
+                cursor.execute(
+                    "SELECT * from vehicles"
+                )
+                vehicles = cursor.fetchall()
+            
+                print('\n ------------ Vehicles Availables --------------\n')
+                for i in vehicles: 
+                    if i[5] == True: 
+                        print(f'{i[0]}-{i[1]} {i[2]} ---> PRICE: ${i[4]}')
+                        
+                print('\n -----------------------------------------------\n')
+
+                user_choice = input('Which Vehicle you want to rent: ')
+                
+                cursor.execute(
+                    f"select wallet from user where user_name = '{user_name}' "
+                )
+                user_wallet = cursor.fetchone()
+
+                cursor.execute(
+                    f"select rent_price from vehicles where id_vehicle = {int(user_choice)}"
+                )
+                rent_price = cursor.fetchone()
+                print(type(rent_price[0]))
+
+                if user_wallet[0] < float(rent_price[0]): 
+                    raise sqlite3.OperationalError("Not enough money on wallet")
+                else: 
+                    cursor.execute(
+                    f"update user set wallet = wallet - {float(rent_price[0])} where user_name = '{user_name}' "
+                )
+            print("Car rented properly!!!")
+        else: 
+            raise sqlite3.OperationalError("!!Incorrect Selection =(")
+        
+
+
+
+
 
     def user_menu(self):
        pass
@@ -229,6 +281,8 @@ class USER(MENU):
         
         if self.autentificator == True: 
             print('user loggin!!')
+            return user_name
+                
             
 
         else: 
@@ -250,10 +304,14 @@ if __name__ == '__main__':
     # table = input("Which table to read ->")
     # data = database.read(table)
     # print(data)
+
+
     user1 = USER(str_path)
+    
     try:
-        user1.autentification()
-        user1.cars_menu()
+        user = user1.autentification()
+        user1.make_payment(user)
+        user1.cars_menu(user)
 
     except sqlite3.OperationalError as e:
         print(e)
