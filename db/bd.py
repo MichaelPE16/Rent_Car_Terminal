@@ -1,5 +1,6 @@
 import sqlite3
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 
 
 # here wer gonna call the first class related to the database management
@@ -226,28 +227,50 @@ class USER(MENU):
                         
                 print('\n -----------------------------------------------\n')
 
-                user_choice = input('Which Vehicle you want to rent: ')
+                user_choice = int(input('Which Vehicle you want to rent: '))
                 
                 cursor.execute(
-                    f"select wallet from user where user_name = '{user_name}' "
+                    f"select wallet, id_user from user where user_name = '{user_name}' "
                 )
-                user_wallet = cursor.fetchone()
-
+                user_wallet = cursor.fetchall()
+                
                 cursor.execute(
-                    f"select rent_price from vehicles where id_vehicle = {int(user_choice)}"
+                    f"select rent_price, id_vehicle from vehicles where id_vehicle = {int(user_choice)}"
                 )
-                rent_price = cursor.fetchone()
-                print(type(rent_price[0]))
+                rent_price = cursor.fetchall()
+                # print(type(user_wallet[0]) ,type(rent_price[0]))
+                
+                ##########################################################
+                #Variables
+                wallet = user_wallet[0][0]
+                id_user = user_wallet[0][1]
+                id_vechicle = rent_price[0][1]
+                rent_price_car = rent_price[0][0]
 
-                if user_wallet[0] < float(rent_price[0]): 
+                print(wallet, id_user, id_vechicle, rent_price_car)
+                ##########################################################
+
+
+                if user_wallet[0] < rent_price[0]:
                     raise sqlite3.OperationalError("Not enough money on wallet")
                 else: 
                     cursor.execute(
-                    f"update user set wallet = wallet - {float(rent_price[0])} where user_name = '{user_name}' "
-                )
+                    f"update user set wallet = wallet - {rent_price_car} where user_name = '{user_name}' ")
+
+                    cursor.execute( 
+                    f"update vehicles set available = FALSE where id_vehicle = {user_choice}")
+
+                    cursor.execute(
+                    
+                    f"update company_resources set company_wallet = company_wallet + {rent_price_car}")
+
+                    cursor.execute(
+                    f"insert into car_rent (id_user, id_vehicle, start_date, end_date) values(?, ? , ? ,?)", 
+                    (id_user, id_vechicle, datetime.now().strftime("%y-%m-%d"),(datetime.now()+ timedelta(days=29)).strftime("%y-%m-%d") ))
+                    
             print("Car rented properly!!!")
         else: 
-            raise sqlite3.OperationalError("!!Incorrect Selection =(")
+            raise sqlite3.OperationalError("!!Incorrect Selection ")
         
 
 
